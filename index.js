@@ -22,7 +22,8 @@ app
   .get("/", (req, res) => res.render("pages/index"));
 
 app.post("/", (req, res) => {
-  console.log(req.body);
+  console.log("req", req);
+  console.log("res", res);
 
   searchGiphy("wtf").then(response => {
     const data = response.data || {};
