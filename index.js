@@ -27,19 +27,20 @@ app.use(bodyParser.json());
 
 app.post("/", (req, res) => {
   const entitiesGenre = _.get(req.body, ["nlp", "entities", "genre"], {});
-  const mostConfidenteGenre = _.first(_.sortBy(entitiesGenre, genre => -genre.confidence));
+  const mostConfidenteGenre = _.first(
+    _.sortBy(entitiesGenre, genre => -genre.confidence)
+  );
   const tag = mostConfidenteGenre.raw;
-  console.log("TAG ---> ", tag);
-  
+  console.log("TAG --->", tag);
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
-
+      const isEmpty = _.isEmpty(data);
       res.send({
         replies: [
           {
-            type: "picture",
-            content: data.data.image_url
+            type: isEmpty ? "text" : "picture",
+            content: isEmpty ? "GIF not found :(" : data.data.image_url
           }
         ]
       });
