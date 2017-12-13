@@ -1,7 +1,8 @@
 const express = require("express");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
+const _ = require("lodash");
 const PORT = process.env.PORT || 5000;
 const GIPHY_API_KEY = "LIfYQva4FvbRqRNpR7sI8wleRxv5azMn";
 
@@ -27,18 +28,31 @@ app.use(bodyParser.json());
 app.post("/", (req, res) => {
   console.log("req", req.body);
 
-  searchGiphy("wtf").then(response => {
-    const data = response.data || {};
+  const tag = _.get(req.body, ["conversation", "memory", "genre", "raw"]);
 
+  if (tag) {
+    searchGiphy(tag).then(response => {
+      const data = response.data || {};
+
+      res.send({
+        replies: [
+          {
+            type: "picture",
+            content: data.data.image_url
+          }
+        ]
+      });
+    });
+  } else {
     res.send({
       replies: [
         {
-          type: "picture",
-          content: data.data.image_url
+          type: "text",
+          content: "GIF not found :("
         }
       ]
     });
-  });
+  }
 });
 
 app.post("/errors", (req, res) => {
