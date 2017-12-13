@@ -27,11 +27,13 @@ app.use(bodyParser.json());
 
 app.post("/", (req, res) => {
   const entitiesGenre = _.get(req.body, ["nlp", "entities", "genre"], {});
-  const mostConfidenteGenre = _.sortBy(entitiesGenre, genre => -genre.confidence);
+  const mostConfidenteGenre = _.first(
+    sortBy(entitiesGenre, genre => -genre.confidence)
+  );
+  const tag = mostConfidenteGenre.raw;
 
-  console.log("TAG ---> ", mostConfidenteGenre);
-
-  if (!_.isEmpty(mostConfidenteGenre)) {
+  console.log("TAG ---> ", tag);
+  if (tag) {
     searchGiphy(mostConfidenteGenre).then(response => {
       const data = response.data || {};
 
