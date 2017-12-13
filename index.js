@@ -21,9 +21,10 @@ app
   .set("view engine", "ejs")
   .get("/", (req, res) => res.render("pages/index"));
 
+app.use(bodyParser.json());
+
 app.post("/", (req, res) => {
-  console.log("req", req);
-  console.log("res", res);
+  console.log("req", req.body);
 
   searchGiphy("wtf").then(response => {
     const data = response.data || {};
