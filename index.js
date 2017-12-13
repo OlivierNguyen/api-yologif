@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 
 app.post("/", (req, res) => {
   const entitiesGenre = _.get(req.body, ["nlp", "entities", "genre"], {});
-  const mostConfidenteGenre = _.sort(entitiesGenre, genre => -genre.confidence);
+  const mostConfidenteGenre = _.sortBy(entitiesGenre, genre => -genre.confidence);
 
   console.log("TAG ---> ", mostConfidenteGenre);
 
