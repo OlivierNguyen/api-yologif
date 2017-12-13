@@ -35,7 +35,7 @@ app.post("/", (req, res) => {
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
-      const isEmpty = _.isEmpty(data);
+      const isEmpty = _.isEmpty(data.data);
       res.send({
         replies: [
           {
