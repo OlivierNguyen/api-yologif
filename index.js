@@ -26,10 +26,9 @@ app
 app.use(bodyParser.json());
 
 app.post("/", (req, res) => {
-  console.log("req", req.body);
-
   const tag = _.get(req.body, ["conversation", "memory", "genre", "raw"]);
-
+  console.log("TAG ---> ", tag);
+  
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
