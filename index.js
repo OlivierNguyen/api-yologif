@@ -88,7 +88,7 @@ app.post("/api/gif/multiple", (req, res) => {
       return res.send({
         replies: R.map(value => ({
           type: "picture",
-          content: value.data.image_url
+          content: value.data.data.image_url
         }))(values)
       });
     });
