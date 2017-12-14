@@ -78,21 +78,20 @@ app.post("/api/gif/multiple", (req, res) => {
 
   console.log("TAG MULTIPLE --->", tag);
   console.log("numberOfGif", numberOfGif);
-  if (tag) {
-    for (let i = 0; i < numberOfGif; i++) {
-      searchGiphy(tag).then(response => {
-        const data = response.data || {};
-        const isEmpty = R.isEmpty(data.data);
-        res.send({
-          replies: [
-            {
-              type: isEmpty ? "text" : "picture",
-              content: isEmpty ? "GIF not found :(" : data.data.image_url
-            }
-          ]
-        });
+
+  if (tag && numberOfGif > 0) {
+    const promises = R.map(i => searchGiphy(tag))(
+      R.times(R.identity)(numberOfGif)
+    );
+
+    Promise.all(promises).then(values => {
+      return res.send({
+        replies: R.map(value => ({
+          type: "picture",
+          content: value.data.image_url
+        }))(values)
       });
-    }
+    });
   } else {
     res.send({
       replies: [
