@@ -44,7 +44,7 @@ app
   .get("/", (req, res) => res.render("pages/index"));
 
 app.post("/api/gif/search", (req, res) => {
-  const tag = getEntityValue(req.body, 'genre');
+  const tag = getEntityValue(req.body, "genre");
 
   console.log("TAG --->", tag);
   if (tag) {
@@ -60,6 +60,38 @@ app.post("/api/gif/search", (req, res) => {
         ]
       });
     });
+  } else {
+    res.send({
+      replies: [
+        {
+          type: "text",
+          content: "GIF not found :("
+        }
+      ]
+    });
+  }
+});
+
+app.post("/api/gif/multiple", (req, res) => {
+  const tag = getEntityValue(req.body, "genre");
+  const numberOfGif = getEntityValue(req.body, "number");
+
+  console.log("TAG MULTIPLE --->", tag);
+  if (tag) {
+    for (let i = 0; i < numberOfGif; i++) {
+      searchGiphy(tag).then(response => {
+        const data = response.data || {};
+        const isEmpty = R.isEmpty(data.data);
+        res.send({
+          replies: [
+            {
+              type: isEmpty ? "text" : "picture",
+              content: isEmpty ? "GIF not found :(" : data.data.image_url
+            }
+          ]
+        });
+      });
+    }
   } else {
     res.send({
       replies: [
