@@ -77,6 +77,7 @@ app.post("/api/gif/multiple", (req, res) => {
   const numberOfGif = getEntityValue(req.body, "number");
 
   console.log("TAG MULTIPLE --->", tag);
+  console.log("numberOfGif", numberOfGif);
   if (tag) {
     for (let i = 0; i < numberOfGif; i++) {
       searchGiphy(tag).then(response => {
