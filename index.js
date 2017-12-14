@@ -8,6 +8,10 @@ const GIPHY_API_KEY = "LIfYQva4FvbRqRNpR7sI8wleRxv5azMn";
 
 const app = express();
 
+/**
+ * Function which return a promise searching a gif using Giphy API endpoint
+ * @param {*} search 
+ */
 const searchGiphy = search => {
   return axios.get("http://api.giphy.com/v1/gifs/random", {
     params: {
@@ -19,13 +23,12 @@ const searchGiphy = search => {
 
 app
   .use(express.static(path.join(__dirname, "public")))
+  .use(bodyParser.json())
   .set("views", path.join(__dirname, "views"))
   .set("view engine", "ejs")
   .get("/", (req, res) => res.render("pages/index"));
 
-app.use(bodyParser.json());
-
-app.post("/", (req, res) => {
+app.post("/api/gif/search", (req, res) => {
   const entitiesGenre = _.get(req.body, ["nlp", "entities", "genre"], {});
   const mostConfidenteGenre = _.first(
     _.sortBy(entitiesGenre, genre => -genre.confidence)
