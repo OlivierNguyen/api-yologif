@@ -3,8 +3,32 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
 const R = require("ramda");
+const SpotifyWebApi = require("spotify-web-api-node");
+
 const PORT = process.env.PORT || 5000;
 const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
+
+/**
+ * Spotify config
+ */
+const spotifyApi = new SpotifyWebApi({
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET
+});
+
+// Retrieve an access token.
+spotifyApi.clientCredentialsGrant().then(
+  data => {
+    console.log("The access token expires in " + data.body["expires_in"]);
+    console.log("The access token is " + data.body["access_token"]);
+
+    // Save the access token so that it's used in future calls
+    spotifyApi.setAccessToken(data.body["access_token"]);
+  },
+  err => {
+    console.log("Something went wrong when retrieving an access token", err);
+  }
+);
 
 /**
  * Function which return a promise searching a gif using Giphy API endpoint
@@ -107,6 +131,18 @@ app.post("/api/gif/multiple", (req, res) => {
       ]
     });
   }
+});
+
+app.get("/api/music/search", (req, res) => {
+  spotifyApi
+    .searchTracks("Potatoes")
+    .then(data =>
+      R.compose(
+        R.filter(track => track.preview_url),
+        R.map(R.pick(["id", "name", "preview_url", "popularity"]))
+      )(data.body.tracks.items)
+    )
+    .then(data => console.log(data));
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
