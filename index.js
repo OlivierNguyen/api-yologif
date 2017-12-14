@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const axios = require("axios");
-const _ = require("lodash");
+const R = require("ramda");
 const PORT = process.env.PORT || 5000;
 const GIPHY_API_KEY = "LIfYQva4FvbRqRNpR7sI8wleRxv5azMn";
 
@@ -10,7 +10,7 @@ const app = express();
 
 /**
  * Function which return a promise searching a gif using Giphy API endpoint
- * @param {*} search 
+ * @param {*} search
  */
 const searchGiphy = search => {
   return axios.get("http://api.giphy.com/v1/gifs/random", {
@@ -29,16 +29,19 @@ app
   .get("/", (req, res) => res.render("pages/index"));
 
 app.post("/api/gif/search", (req, res) => {
-  const entitiesGenre = _.get(req.body, ["nlp", "entities", "genre"], {});
-  const mostConfidenteGenre = _.first(
-    _.sortBy(entitiesGenre, genre => -genre.confidence)
-  );
-  const tag = mostConfidenteGenre.raw;
+
+  const tag = R.compose(
+    R.propOr(null, "raw"),
+    R.last,
+    R.sortBy(R.prop("confidence")),
+    R.pathOr([], ["nlp", "entities", "genre"])
+  )(req.body);
+
   console.log("TAG --->", tag);
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
-      const isEmpty = _.isEmpty(data.data);
+      const isEmpty = R.isEmpty(data.data);
       res.send({
         replies: [
           {
