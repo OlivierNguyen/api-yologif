@@ -11,6 +11,7 @@ const app = express();
 /**
  * Function which return a promise searching a gif using Giphy API endpoint
  * @param {*} search
+ * return Promise
  */
 const searchGiphy = search => {
   return axios.get("http://api.giphy.com/v1/gifs/random", {
@@ -21,6 +22,20 @@ const searchGiphy = search => {
   });
 };
 
+/**
+ * Function which extracts a tag ("genre" entities) from the Recast.ai body answer
+ * @param body: {messages: [], conversation: {}, nlp: { entities: { genre: [...]}}}
+ * @param typeEntity: Type of entity (number, genre, verb...)
+ * return String
+ */
+const getEntityValue = (body, typeEntity) =>
+  R.compose(
+    R.propOr(null, "raw"),
+    R.last,
+    R.sortBy(R.prop("confidence")),
+    R.pathOr([], ["nlp", "entities", typeEntity])
+  )(body);
+
 app
   .use(express.static(path.join(__dirname, "public")))
   .use(bodyParser.json())
@@ -29,13 +44,7 @@ app
   .get("/", (req, res) => res.render("pages/index"));
 
 app.post("/api/gif/search", (req, res) => {
-
-  const tag = R.compose(
-    R.propOr(null, "raw"),
-    R.last,
-    R.sortBy(R.prop("confidence")),
-    R.pathOr([], ["nlp", "entities", "genre"])
-  )(req.body);
+  const tag = getEntityValue(req.body, 'genre');
 
   console.log("TAG --->", tag);
   if (tag) {
