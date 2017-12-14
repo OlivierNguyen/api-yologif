@@ -4,9 +4,7 @@ const path = require("path");
 const axios = require("axios");
 const R = require("ramda");
 const PORT = process.env.PORT || 5000;
-const GIPHY_API_KEY = "LIfYQva4FvbRqRNpR7sI8wleRxv5azMn";
-
-const app = express();
+const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
 
 /**
  * Function which return a promise searching a gif using Giphy API endpoint
@@ -36,6 +34,11 @@ const getEntityValue = (body, typeEntity) =>
     R.pathOr([], ["nlp", "entities", typeEntity])
   )(body);
 
+/**
+ * Configure routes
+ */
+const app = express();
+
 app
   .use(express.static(path.join(__dirname, "public")))
   .use(bodyParser.json())
@@ -43,10 +46,12 @@ app
   .set("view engine", "ejs")
   .get("/", (req, res) => res.render("pages/index"));
 
+/**
+ * POST /api/gif/search
+ */
 app.post("/api/gif/search", (req, res) => {
   const tag = getEntityValue(req.body, "genre");
 
-  console.log("TAG --->", tag);
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
@@ -72,12 +77,12 @@ app.post("/api/gif/search", (req, res) => {
   }
 });
 
+/**
+ * POST /api/gif/multiple
+ */
 app.post("/api/gif/multiple", (req, res) => {
   const tag = getEntityValue(req.body, "genre");
   const numberOfGif = getEntityValue(req.body, "number");
-
-  console.log("TAG MULTIPLE --->", tag);
-  console.log("numberOfGif", numberOfGif);
 
   if (tag && numberOfGif > 0) {
     const promises = R.map(i => searchGiphy(tag))(
@@ -102,11 +107,6 @@ app.post("/api/gif/multiple", (req, res) => {
       ]
     });
   }
-});
-
-app.post("/errors", (req, res) => {
-  console.log(req.body);
-  res.send();
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
