@@ -51,12 +51,9 @@ const searchGiphy = search => {
  * @param typeEntity: Type of entity (number, genre, verb...)
  * return String
  */
-const getEntityValue = (body, typeEntity) =>
+const getMemoryValue = (body, typeEntity) =>
   R.compose(
-    R.propOr(null, "raw"),
-    R.last,
-    R.sortBy(R.prop("confidence")),
-    R.pathOr([], ["nlp", "entities", typeEntity])
+    R.pathOr([], ["nlp", "memory", typeEntity])
   )(body);
 
 /**
@@ -75,7 +72,7 @@ app
  * POST /api/gif/search
  */
 app.post("/api/gif/search", (req, res) => {
-  const tag = getEntityValue(req.body, "genre");
+  const tag = getMemoryValue(req.body, "genre");
   console.log("Tag -> ", tag);
   if (tag) {
     searchGiphy(tag).then(response => {
@@ -106,7 +103,7 @@ app.post("/api/gif/search", (req, res) => {
  * POST /api/gif/multiple
  */
 app.post("/api/gif/multiple", (req, res) => {
-  const tag = getEntityValue(req.body, "genre");
+  const tag = getMemoryValue(req.body, "genre");
   const numberOfGif = getEntityValue(req.body, "number");
   console.log("Tag && Number-> ", tag, numberOfGif);
 
@@ -146,7 +143,7 @@ app.post("/api/gif/multiple", (req, res) => {
 app.post("/api/music/search/top", (req, res) => {
   getAccessToken().then(() => {
     const artist =
-      getEntityValue(req.body, "person") || getEntityValue(req.body, "artist");
+    getMemoryValue(req.body, "person") || getMemoryValue(req.body, "artist");
     const formattedArtist = artist.toLowerCase();
 
     spotifyApi
