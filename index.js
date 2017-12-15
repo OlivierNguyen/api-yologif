@@ -53,6 +53,9 @@ const searchGiphy = search => {
  */
 const getMemoryValue = (body, typeEntity) =>
   R.compose(
+    R.propOr(null, "raw"),
+    R.last,
+    R.sortBy(R.prop("confidence")),
     R.pathOr([], ["conversation", "memory", typeEntity])
   )(body);
 
