@@ -53,7 +53,7 @@ const searchGiphy = search => {
  */
 const getMemoryValue = (body, typeEntity) =>
   R.compose(
-    R.pathOr([], ["nlp", "memory", typeEntity])
+    R.pathOr([], ["conversation", "memory", typeEntity])
   )(body);
 
 /**
