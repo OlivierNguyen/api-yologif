@@ -108,7 +108,7 @@ app.post("/api/gif/multiple", (req, res) => {
   const tag = getEntityValue(req.body, "genre");
   const numberOfGif = getEntityValue(req.body, "number");
   console.log("Tag && Number-> ", tag, numberOfGif);
-  
+
   if (tag && numberOfGif > 0) {
     const promises = R.map(i => searchGiphy(tag))(
       R.times(R.identity)(numberOfGif)
@@ -158,15 +158,25 @@ app.post("/api/music/search/top", (req, res) => {
       }
       const artist = R.head(data.body.artists.items);
       console.log("Artist found: ", artist);
-      return artist.id;
+      return {
+        id: artist.id,
+        name: artist.name
+      };
     })
-    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, "GB"))
-    .then(data => R.map(R.pick(["id", "name"]))(data.body.tracks))
+    .then(({ id, name }) =>
+      spotifyApi
+        .getArtistTopTracks(id, "GB")
+        .then(data =>
+          R.map(track => ({ ...R.pick(["id", "name"])(track), artist: name }))(
+            data.body.tracks
+          )
+        )
+    )
     .then(data =>
       res.send({
         replies: R.map(track => ({
           type: "text",
-          content: track.name
+          content: track.artist + " - " + track.name
         }))(data)
       })
     );
