@@ -147,13 +147,41 @@ app.post("/api/music/search/top", (req, res) => {
   spotifyApi
     .searchArtists(formattedArtist)
     .then(data => R.head(data.body.artists.items).id)
-    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, 'GB'))
-    .then(data => R.map(R.pick(['id', 'name']))(data.body.tracks))
+    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, "GB"))
+    .then(data => R.map(R.pick(["id", "name"]))(data.body.tracks))
     .then(data =>
       res.send({
         replies: R.map(track => ({
-            type: 'text',
-            content: track.name
+          type: "text",
+          content: track.name
+        }))(data)
+      })
+    );
+});
+
+app.post("/api/music/search/top", (req, res) => {
+  const artist = getEntityValue(req.body, "person") || "Love";
+  const formattedArtist = artist.toLowerCase();
+
+  spotifyApi
+    .searchArtists(formattedArtist)
+    .then(data => {
+      const artists = data.body.artists.items;
+      if (R.isEmpty(artists)) {
+        return res.send({
+          type: "text",
+          content: formattedArtist + " is not found :("
+        });
+      }
+      return R.head(data.body.artists.items).id;
+    })
+    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, "GB"))
+    .then(data => R.map(R.pick(["id", "name"]))(data.body.tracks))
+    .then(data =>
+      res.send({
+        replies: R.map(track => ({
+          type: "text",
+          content: track.name
         }))(data)
       })
     );
