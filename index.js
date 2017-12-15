@@ -75,7 +75,7 @@ app
  */
 app.post("/api/gif/search", (req, res) => {
   const tag = getEntityValue(req.body, "genre");
-
+  console.log("Tag -> ", tag);
   if (tag) {
     searchGiphy(tag).then(response => {
       const data = response.data || {};
@@ -107,7 +107,8 @@ app.post("/api/gif/search", (req, res) => {
 app.post("/api/gif/multiple", (req, res) => {
   const tag = getEntityValue(req.body, "genre");
   const numberOfGif = getEntityValue(req.body, "number");
-
+  console.log("Tag && Number-> ", tag, numberOfGif);
+  
   if (tag && numberOfGif > 0) {
     const promises = R.map(i => searchGiphy(tag))(
       R.times(R.identity)(numberOfGif)
@@ -140,24 +141,6 @@ app.post("/api/gif/multiple", (req, res) => {
 /**
  * POST /api/music/search
  */
-app.post("/api/music/search/top", (req, res) => {
-  const artist = getEntityValue(req.body, "person") || "Love";
-  const formattedArtist = artist.toLowerCase();
-
-  spotifyApi
-    .searchArtists(formattedArtist)
-    .then(data => R.head(data.body.artists.items).id)
-    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, "GB"))
-    .then(data => R.map(R.pick(["id", "name"]))(data.body.tracks))
-    .then(data =>
-      res.send({
-        replies: R.map(track => ({
-          type: "text",
-          content: track.name
-        }))(data)
-      })
-    );
-});
 
 app.post("/api/music/search/top", (req, res) => {
   const artist = getEntityValue(req.body, "person") || "Love";
@@ -173,7 +156,9 @@ app.post("/api/music/search/top", (req, res) => {
           content: formattedArtist + " is not found :("
         });
       }
-      return R.head(data.body.artists.items).id;
+      const artist = R.head(data.body.artists.items);
+      console.log("Artist found: ", artist);
+      return artist.id;
     })
     .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, "GB"))
     .then(data => R.map(R.pick(["id", "name"]))(data.body.tracks))
