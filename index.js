@@ -133,16 +133,30 @@ app.post("/api/gif/multiple", (req, res) => {
   }
 });
 
-app.get("/api/music/search", (req, res) => {
+/**
+ * SPOTIFY ROUTE
+ */
+
+/**
+ * POST /api/music/search
+ */
+app.post("/api/music/search/top", (req, res) => {
+  const artist = getEntityValue(req.body, "person") || "Love";
+  const formattedArtist = artist.toLowerCase();
+
   spotifyApi
-    .searchTracks("Potatoes")
+    .searchArtists(formattedArtist)
+    .then(data => R.head(data.body.artists.items).id)
+    .then(idArtist => spotifyApi.getArtistTopTracks(idArtist, 'GB'))
+    .then(data => R.map(R.pick(['id', 'name']))(data.body.tracks))
     .then(data =>
-      R.compose(
-        R.filter(track => track.preview_url),
-        R.map(R.pick(["id", "name", "preview_url", "popularity"]))
-      )(data.body.tracks.items)
-    )
-    .then(data => console.log(data));
+      res.send({
+        replies: R.map(track => ({
+            type: 'text',
+            content: track.name
+        }))(data)
+      })
+    );
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
