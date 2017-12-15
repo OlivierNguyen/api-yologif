@@ -51,10 +51,23 @@ const searchGiphy = search => {
  * @param typeEntity: Type of entity (number, genre, verb...)
  * return String
  */
-const getMemoryValue = (body, typeEntity) =>
+const getEntityValue = (body, typeEntity) =>
+R.compose(
+  R.propOr(null, "raw"),
+  R.last,
+  R.sortBy(R.prop("confidence")),
+  R.pathOr([], ["nlp", "entities", typeEntity])
+)(body);
+
+/**
+ * Function which extracts memory value according of its type
+ * @param {*} body 
+ * @param {*} typeMemory 
+ */
+const getMemoryValue = (body, typeMemory) =>
   R.compose(
     R.propOr(null, "raw"),
-    R.pathOr([], ["conversation", "memory", typeEntity])
+    R.pathOr([], ["conversation", "memory", typeMemory])
   )(body);
 
 /**
@@ -105,7 +118,7 @@ app.post("/api/gif/search", (req, res) => {
  */
 app.post("/api/gif/multiple", (req, res) => {
   const tag = getMemoryValue(req.body, "genre");
-  const numberOfGif = getMemoryValue(req.body, "number");
+  const numberOfGif = getEntityValue(req.body, "number");
   console.log("Tag && Number-> ", tag, numberOfGif);
 
   if (tag && numberOfGif > 0) {
