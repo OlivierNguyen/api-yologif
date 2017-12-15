@@ -142,7 +142,7 @@ app.post("/api/gif/multiple", (req, res) => {
  * POST /api/music/search
  */
 
-app.get("/api/music/search/top", (req, res) => {
+app.post("/api/music/search/top", (req, res) => {
   const artist = getEntityValue(req.body, "person");
   const formattedArtist = artist.toLowerCase();
 
