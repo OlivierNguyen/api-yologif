@@ -143,7 +143,7 @@ app.post("/api/gif/multiple", (req, res) => {
  */
 
 app.post("/api/music/search/top", (req, res) => {
-  const artist = getEntityValue(req.body, "person");
+  const artist = getEntityValue(req.body, "person") || getEntityValue(req.body, "artist");
   const formattedArtist = artist.toLowerCase();
 
   spotifyApi
