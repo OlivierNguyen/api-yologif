@@ -105,7 +105,7 @@ app.post("/api/gif/search", (req, res) => {
  */
 app.post("/api/gif/multiple", (req, res) => {
   const tag = getMemoryValue(req.body, "genre");
-  const numberOfGif = getEntityValue(req.body, "number");
+  const numberOfGif = getMemoryValue(req.body, "number");
   console.log("Tag && Number-> ", tag, numberOfGif);
 
   if (tag && numberOfGif > 0) {
