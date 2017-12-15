@@ -17,18 +17,19 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 // Retrieve an access token.
-spotifyApi.clientCredentialsGrant().then(
-  data => {
-    console.log("The access token expires in " + data.body["expires_in"]);
-    console.log("The access token is " + data.body["access_token"]);
+const getAccessToken = () =>
+  spotifyApi.clientCredentialsGrant().then(
+    data => {
+      console.log("The access token expires in " + data.body["expires_in"]);
+      console.log("The access token is " + data.body["access_token"]);
 
-    // Save the access token so that it's used in future calls
-    spotifyApi.setAccessToken(data.body["access_token"]);
-  },
-  err => {
-    console.log("Something went wrong when retrieving an access token", err);
-  }
-);
+      // Save the access token so that it's used in future calls
+      spotifyApi.setAccessToken(data.body["access_token"]);
+    },
+    err => {
+      console.log("Something went wrong when retrieving an access token", err);
+    }
+  );
 
 /**
  * Function which return a promise searching a gif using Giphy API endpoint
@@ -143,43 +144,47 @@ app.post("/api/gif/multiple", (req, res) => {
  */
 
 app.post("/api/music/search/top", (req, res) => {
-  const artist = getEntityValue(req.body, "person") || getEntityValue(req.body, "artist");
-  const formattedArtist = artist.toLowerCase();
+  getAccessToken().then(() => {
+    const artist =
+      getEntityValue(req.body, "person") || getEntityValue(req.body, "artist");
+    const formattedArtist = artist.toLowerCase();
 
-  spotifyApi
-    .searchArtists(formattedArtist)
-    .then(data => {
-      const artists = data.body.artists.items;
-      if (R.isEmpty(artists)) {
-        return res.send({
-          type: "text",
-          content: formattedArtist + " is not found :("
-        });
-      }
-      const artist = R.head(data.body.artists.items);
-      console.log("Artist found: ", artist);
-      return {
-        id: artist.id,
-        name: artist.name
-      };
-    })
-    .then(({ id, name }) =>
-      spotifyApi
-        .getArtistTopTracks(id, "GB")
-        .then(data =>
-          R.map(track => ({ ...R.pick(["id", "name"])(track), artist: name }))(
-            data.body.tracks
-          )
-        )
-    )
-    .then(data =>
-      res.send({
-        replies: R.map(track => ({
-          type: "text",
-          content: track.artist + " - " + track.name
-        }))(data)
+    spotifyApi
+      .searchArtists(formattedArtist)
+      .then(data => {
+        const artists = data.body.artists.items;
+        if (R.isEmpty(artists)) {
+          return res.send({
+            type: "text",
+            content: formattedArtist + " is not found :("
+          });
+        }
+        const artist = R.head(data.body.artists.items);
+        console.log("Artist found: ", artist);
+        return {
+          id: artist.id,
+          name: artist.name
+        };
       })
-    );
+      .then(({ id, name }) =>
+        spotifyApi
+          .getArtistTopTracks(id, "GB")
+          .then(data =>
+            R.map(track => ({
+              ...R.pick(["id", "name"])(track),
+              artist: name
+            }))(data.body.tracks)
+          )
+      )
+      .then(data =>
+        res.send({
+          replies: R.map(track => ({
+            type: "text",
+            content: track.artist + " - " + track.name
+          }))(data)
+        })
+      );
+  });
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
